@@ -1,12 +1,21 @@
 {
   "displayName": "Night Line",
   "defaultLanguageCode": "en",
-  "timeZone": "America/Chicago",
+  "timeZone": "America/New_York",
+  "projectNumber": 921064029774,
   "startFlow": "Default Start Flow",
   "advancedSettings": {
     "dtmfSettings": {
-      "enabled": true
+      "enabled": true,
+      "interdigitTimeoutDuration": {
+        "seconds": 3
+      },
+      "endpointingTimeoutDuration": {
+        "seconds": 2
+      }
     },
-    "loggingSettings": {}
+    "loggingSettings": {
+    
+    }
   }
 }

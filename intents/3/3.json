@@ -1,5 +1,6 @@
 {
+  "name": "cf7a0849-3bf7-43a4-9737-8b58804a3b72",
   "displayName": "3",
-  "dtmfPattern": "3",
-  "priority": 500000
+  "priority": 1000,
+  "numTrainingPhrases": 1
 }

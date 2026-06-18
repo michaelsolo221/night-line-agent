@@ -1,7 +1,12 @@
 {
+  "name": "cefa66c6-38fe-4763-b7dc-e5997c0805e3",
   "displayName": "night-line-orchestrator",
-  "timeout": "30s",
   "genericWebService": {
-    "uri": "https://night-line-921064029774.us-central1.run.app/converse"
+    "uri": "https://night-line-921064029774.us-central1.run.app/converse",
+    "webhookType": "STANDARD",
+    "serviceAgentAuth": "ID_TOKEN"
+  },
+  "timeout": {
+    "seconds": 30
   }
 }

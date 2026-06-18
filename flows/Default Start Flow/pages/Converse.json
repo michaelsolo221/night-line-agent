@@ -1,0 +1,31 @@
+{
+  "name": "84bab927-fa41-4669-ad28-a3f32bb099dd",
+  "displayName": "Converse",
+  "form": {
+  
+  },
+  "transitionRoutes": [ {
+    "intent": "goodbye",
+    "targetPage": "Goodbye",
+    "name": "1c60d207-5e3d-4bf2-9159-f7c6813c10e6"
+  } ],
+  "eventHandlers": [ {
+    "event": "sys.no-match-default",
+    "triggerFulfillment": {
+      "webhook": "night-line-orchestrator",
+      "tag": "converse"
+    },
+    "name": "9ffc74b5-d21a-471c-b042-457ad35c2308"
+  }, {
+    "event": "sys.no-input-default",
+    "triggerFulfillment": {
+      "messages": [ {
+        "text": {
+          "text": [ "Still with me?" ]
+        },
+        "languageCode": "en"
+      } ]
+    },
+    "name": "182a1df1-e704-4926-8c3a-ffe429a342c1"
+  } ]
+}

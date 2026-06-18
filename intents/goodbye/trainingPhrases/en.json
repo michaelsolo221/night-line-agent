@@ -1,11 +1,33 @@
 {
-  "trainingPhrases": [
-    { "parts": [{ "text": "goodbye" }] },
-    { "parts": [{ "text": "bye" }] },
-    { "parts": [{ "text": "good night" }] },
-    { "parts": [{ "text": "good bye" }] },
-    { "parts": [{ "text": "talk to you later" }] },
-    { "parts": [{ "text": "see you" }] },
-    { "parts": [{ "text": "hang up" }] }
-  ]
+  "trainingPhrases": [ {
+    "parts": [ {
+      "text": "goodbye"
+    } ],
+    "repeatCount": 1,
+    "languageCode": "en"
+  }, {
+    "parts": [ {
+      "text": "bye"
+    } ],
+    "repeatCount": 1,
+    "languageCode": "en"
+  }, {
+    "parts": [ {
+      "text": "hang up"
+    } ],
+    "repeatCount": 1,
+    "languageCode": "en"
+  }, {
+    "parts": [ {
+      "text": "I have to go"
+    } ],
+    "repeatCount": 1,
+    "languageCode": "en"
+  }, {
+    "parts": [ {
+      "text": "goodnight"
+    } ],
+    "repeatCount": 1,
+    "languageCode": "en"
+  } ]
 }

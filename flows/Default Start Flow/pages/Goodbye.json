@@ -1,0 +1,15 @@
+{
+  "name": "b46d5dd3-b4e8-4d2b-b4b9-6b39e6b99f8a",
+  "displayName": "Goodbye",
+  "form": {
+  
+  },
+  "entryFulfillment": {
+    "messages": [ {
+      "text": {
+        "text": [ "Goodnight. Call again soon." ]
+      },
+      "languageCode": "en"
+    } ]
+  }
+}

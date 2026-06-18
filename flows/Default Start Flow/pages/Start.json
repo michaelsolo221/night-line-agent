@@ -1,0 +1,23 @@
+{
+  "name": "443d215a-22b3-4444-a886-3ed94dea9e83",
+  "displayName": "Start",
+  "form": {
+  
+  },
+  "entryFulfillment": {
+    "messages": [ {
+      "text": {
+        "text": [ "Welcome to the Night Line. Pick your companion. Press 1 for Luna, the runaway heiress." ]
+      },
+      "languageCode": "en"
+    } ]
+  },
+  "transitionRoutes": [ {
+    "intent": "1",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Luna",
+    "name": "21c439d2-fc8b-46ce-9434-28ece9d1d4df"
+  } ]
+}

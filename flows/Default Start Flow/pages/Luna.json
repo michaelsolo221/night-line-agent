@@ -1,0 +1,28 @@
+{
+  "name": "ded070c3-b911-4a67-86c6-54ce4a0b2278",
+  "displayName": "Luna",
+  "form": {
+  
+  },
+  "entryFulfillment": {
+    "webhook": "night-line-orchestrator",
+    "tag": "greeting",
+    "setParameterActions": [ {
+      "parameter": "persona",
+      "value": "luna"
+    } ]
+  },
+  "transitionRoutes": [ {
+    "intent": "goodbye",
+    "targetPage": "Goodbye",
+    "name": "392c2d9c-d59b-4480-b865-2534985f7f64"
+  } ],
+  "eventHandlers": [ {
+    "targetPage": "Converse",
+    "event": "sys.no-match-default",
+    "triggerFulfillment": {
+    
+    },
+    "name": "bf069fe0-0d75-4cfc-b780-df0071807362"
+  } ]
+}

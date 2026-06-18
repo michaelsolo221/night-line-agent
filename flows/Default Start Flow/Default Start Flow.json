@@ -1,8 +1,67 @@
 {
+  "name": "00000000-0000-0000-0000-000000000000",
   "displayName": "Default Start Flow",
-  "description": "Main flow: DTMF persona selection and conversation loop.",
+  "description": "A start flow created along with the agent",
+  "transitionRoutes": [ {
+    "intent": "Default Welcome Intent",
+    "triggerFulfillment": {
+      "messages": [ {
+        "text": {
+          "text": [ "Welcome to the Night Line. Pick your companion. Press 1 for Luna, the runaway heiress." ]
+        },
+        "languageCode": "en"
+      } ]
+    },
+    "name": "f2f17c77-3756-48a7-9cc2-5bc57024a2ed"
+  }, {
+    "intent": "1",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Luna",
+    "name": "5818d813-504c-426f-b743-dc95f7a66912"
+  }, {
+    "intent": "2",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Luna",
+    "name": "d2b999c5-74d5-4f19-8ac7-423706aa7cae"
+  }, {
+    "intent": "3",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Luna",
+    "name": "cfc10790-feaa-4662-be2f-65a26144dca2"
+  } ],
+  "eventHandlers": [ {
+    "event": "sys.no-match-default",
+    "triggerFulfillment": {
+      "messages": [ {
+        "text": {
+          "text": [ "I didn't get that." ]
+        },
+        "languageCode": "en"
+      } ]
+    },
+    "name": "910e51ef-046b-44a6-919e-aab51985b331"
+  }, {
+    "targetPage": "Luna",
+    "event": "sys.no-input-default",
+    "triggerFulfillment": {
+    
+    },
+    "name": "no-input-to-luna"
+  } ],
   "nluSettings": {
-    "modelType": "MODEL_TYPE_STANDARD",
-    "classificationThreshold": 0.3
-  }
+    "modelType": "MODEL_TYPE_ADVANCED",
+    "classificationThreshold": 0.30000001
+  },
+  "nluSettingsList": [ {
+    "modelType": "MODEL_TYPE_ADVANCED",
+    "classificationThreshold": 0.30000001,
+    "customConfigKey": "c9fcf103-85a5-4a85-9fd0-1a9116e90599",
+    "languageCode": "en"
+  } ]
 }

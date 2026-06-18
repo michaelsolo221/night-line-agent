@@ -1,4 +1,6 @@
 {
+  "name": "4eba115d-4de0-4604-b079-81de16ebd074",
   "displayName": "goodbye",
-  "priority": 500000
+  "priority": 500000,
+  "numTrainingPhrases": 5
 }
