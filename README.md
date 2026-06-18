@@ -2,6 +2,15 @@
 
 Agent definition in [JSON package export format](https://docs.cloud.google.com/dialogflow/cx/docs/reference/json-export). Every resource is a JSON file — no console drag-and-drop.
 
+## Repository architecture
+
+| Repo | Purpose |
+|---|---|
+| [`michaelsolo221/night-line-agent`](https://github.com/michaelsolo221/night-line-agent) (this repo) | Dialogflow CX agent definition — flows, pages, intents, webhooks. Agent-only files at root. |
+| [`michaelsolo221/dgflow`](https://github.com/michaelsolo221/dgflow) | Cloud Run webhook app — TypeScript/Express orchestrator, persona loading, Gemini integration, Firestore memory. |
+
+Why two repos: Dialogflow CX Git integration requires agent-only files at root and deletes non-agent files on push. The webhook app lives separately.
+
 ## Agent identity
 
 - **Project:** `superb-tendril-409615`
@@ -28,8 +37,8 @@ flows/
     Default Start Flow.json                     # flow config, NLU settings
     pages/
       Start.json                                # welcome TTS + DTMF route to Luna
-      Luna.json                                 # webhook greeting (persona=luna) → Converse
-      Converse.json                             # no-match → webhook converse, no-input retry
+      Luna.json                                 # webhook greeting (persona=luna) -> Converse
+      Converse.json                             # no-match -> webhook converse, no-input retry
       Goodbye.json                              # goodbye TTS
 ```
 
@@ -38,7 +47,6 @@ flows/
 ### Restore via REST API (one call)
 
 ```bash
-# Zip and restore
 cd night-line-agent && zip -r /tmp/agent.zip agent.json flows/ intents/ webhooks/ generativeSettings/
 
 ACCESS_TOKEN=$(gcloud auth print-access-token)
@@ -52,7 +60,7 @@ curl -X POST \
 
 ### Console Git integration
 
-1. Agent console → **Manage** → **Git** → **Create new**
+1. Agent console -> **Manage** -> **Git** -> **Create new**
 2. Repository: `https://github.com/michaelsolo221/night-line-agent.git`
 3. Branch: `main`
 4. Access token secret: `projects/superb-tendril-409615/secrets/github-token/versions/latest`
@@ -61,7 +69,7 @@ curl -X POST \
 ### Webhook auth (set after import)
 
 The webhook auth (`serviceAgentAuth: ID_TOKEN`) is not preserved in JSON import. Set it in the console:
-Open webhook → Auth → ID Token → Save.
+Open webhook -> Auth -> ID Token -> Save.
 
 ## Validation
 
@@ -72,4 +80,4 @@ python3 scripts/validate-references.py  # cross-reference check
 
 ## Phone Gateway (manual, once)
 
-Console → Manage → Integrations → Dialogflow Phone Gateway → Create
+Console -> Manage -> Integrations -> Dialogflow Phone Gateway -> Create
