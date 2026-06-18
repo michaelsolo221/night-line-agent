@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 """Cross-reference validation for Dialogflow CX agent JSON package files.
 
-Checks that every display-name reference resolves to an existing resource:
-  - agent.json startFlow → flows/<name>/
-  - transitionRoutes[].intent → intents/<name>/<name>.json
-  - transitionRoutes[].targetPage → pages/<name>.json (in same flow)
-  - fulfillment.webhook → webhooks/<name>.json
-  - eventHandlers[].targetPage → pages/<name>.json
-
-Exit code 0 = pass, 1 = failures found.
+Checks that every display-name reference resolves to an existing resource.
 """
 
 import json
@@ -18,7 +11,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ERRORS: list[str] = []
 
-# Collected display names
 known_intents: set[str] = set()
 known_pages: dict[str, str] = {}   # displayName → flow dir name
 known_flows: set[str] = set()
@@ -40,8 +32,6 @@ def load_json(path: Path) -> dict | None:
 
 
 def collect_names():
-    """Scan all JSON files and collect display names."""
-    # Intents
     intents_dir = ROOT / "intents"
     if intents_dir.is_dir():
         for d in intents_dir.iterdir():
@@ -52,7 +42,6 @@ def collect_names():
             if data and "displayName" in data:
                 known_intents.add(data["displayName"])
 
-    # Flows and pages
     flows_dir = ROOT / "flows"
     if flows_dir.is_dir():
         for fd in flows_dir.iterdir():
@@ -69,7 +58,6 @@ def collect_names():
                     if pdata and "displayName" in pdata:
                         known_pages[pdata["displayName"]] = fd.name
 
-    # Webhooks
     wh_dir = ROOT / "webhooks"
     if wh_dir.is_dir():
         for f in wh_dir.glob("*.json"):
@@ -100,9 +88,27 @@ def validate_pages():
     flows_dir = ROOT / "flows"
     if not flows_dir.is_dir():
         return
-    for flow_name in sorted(
-        d.name for d in flows_dir.iterdir() if d.is_dir()
-    ):
+    for flow_name in sorted(d.name for d in flows_dir.iterdir() if d.is_dir()):
+        # Check flow-level transition routes
+        flow_json = flows_dir / flow_name / f"{flow_name}.json"
+        fdata = load_json(flow_json)
+        if fdata:
+            for i, route in enumerate(fdata.get("transitionRoutes", [])):
+                rctx = f"flows/{flow_name}/{flow_name}.json transitionRoutes[{i}]"
+                intent = route.get("intent")
+                if intent and intent not in known_intents:
+                    err(rctx, f'intent "{intent}" not found in intents/')
+                tp = route.get("targetPage")
+                if tp and tp != END_SESSION and tp not in known_pages:
+                    err(rctx, f'targetPage "{tp}" not found')
+            for i, handler in enumerate(fdata.get("eventHandlers", [])):
+                hctx = f"flows/{flow_name}/{flow_name}.json eventHandlers[{i}]"
+                tp = handler.get("targetPage")
+                if tp and tp != END_SESSION and tp not in known_pages:
+                    err(hctx, f'targetPage "{tp}" not found')
+                check_fulfillment(f"{hctx}.triggerFulfillment", handler.get("triggerFulfillment"))
+
+        # Check page-level references
         pages_dir = flows_dir / flow_name / "pages"
         if not pages_dir.is_dir():
             continue
@@ -111,21 +117,15 @@ def validate_pages():
             data = load_json(pf)
             if not data:
                 continue
-
-            # transitionRoutes
             for i, route in enumerate(data.get("transitionRoutes", [])):
                 rctx = f"{rel} transitionRoutes[{i}]"
                 intent = route.get("intent")
                 if intent and intent not in known_intents:
-                    err(rctx, f'intent "{intent}" not found in intents/')
+                    err(rctx, f'intent "{intent}" not found')
                 tp = route.get("targetPage")
                 if tp and tp != END_SESSION and tp not in known_pages:
-                    err(rctx, f'targetPage "{tp}" not found in any flow pages/')
-
-            # entryFulfillment
+                    err(rctx, f'targetPage "{tp}" not found')
             check_fulfillment(f"{rel}.entryFulfillment", data.get("entryFulfillment"))
-
-            # eventHandlers
             for i, handler in enumerate(data.get("eventHandlers", [])):
                 hctx = f"{rel} eventHandlers[{i}]"
                 tp = handler.get("targetPage")

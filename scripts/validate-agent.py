@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Local schema validation for Dialogflow CX agent JSON package files.
 
-Runs without GCP credentials. Checks:
-  - agent.json exists and has required fields
-  - Flow/page/intent/webhook directory structure matches spec
-  - Fulfillment objects have correct types
-  - Enum values use correct casing
-  - No empty required strings
+Checks structure matches the real CX export format:
+  - agent.json exists with required fields
+  - webhook timeout is {"seconds": N} not a string
+  - messages use {"text": {"text": [...]}} not {"outputAudioText": ...}
+  - pages have "form": {} field
+  - intents have "name" (UUID) field
+  - training phrases have "repeatCount" and "languageCode"
 
-Exit code 0 = pass, 1 = failures found.
+Exit 0 = pass, 1 = failures.
 """
 
 import json
@@ -17,8 +18,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ERRORS: list[str] = []
-
-VALID_AUTH_ENUMS = {"ID_TOKEN", "ACCESS_TOKEN", "NONE", "SERVICE_AGENT_AUTH_UNSPECIFIED", ""}
 
 
 def err(ctx: str, msg: str):
@@ -35,46 +34,21 @@ def load_json(path: Path) -> dict | None:
         return None
 
 
-def require_fields(rel: str, data: dict, fields: list[str]):
-    for f in fields:
-        if f not in data:
-            err(rel, f"missing required field: {f}")
-
-
-def validate_fulfillment(ctx: str, ful: dict | None):
-    if not ful:
-        return
-    wh = ful.get("webhook")
-    if wh and not isinstance(wh, str):
-        err(ctx, f"webhook must be a string display name, got {type(wh).__name__}")
-    if wh and not ful.get("tag"):
-        err(ctx, "webhook specified but tag is missing")
-    for i, msg in enumerate(ful.get("messages", [])):
-        oat = msg.get("outputAudioText")
-        if oat is not None:
-            if not isinstance(oat, dict):
-                err(ctx, f"messages[{i}].outputAudioText must be object")
-            elif "text" in oat and not isinstance(oat["text"], str):
-                err(ctx, f"messages[{i}].outputAudioText.text must be string")
-        ei = msg.get("endInteraction")
-        if ei is not None and not isinstance(ei, dict):
-            err(ctx, f"messages[{i}].endInteraction must be object")
-
-
 def validate_agent_json():
     p = ROOT / "agent.json"
     if not p.exists():
-        err("agent.json", "file missing — required at root of JSON package")
+        err("agent.json", "file missing")
         return
     data = load_json(p)
     if not data:
         return
-    require_fields("agent.json", data, ["displayName", "defaultLanguageCode", "timeZone"])
-    sf = data.get("startFlow")
-    if not sf:
-        err("agent.json", "missing startFlow")
-    elif not (ROOT / "flows" / sf).is_dir():
-        err("agent.json", f"startFlow '{sf}' — no matching directory at flows/{sf}/")
+    for field in ("displayName", "defaultLanguageCode", "timeZone", "startFlow"):
+        if field not in data:
+            err("agent.json", f"missing required field: {field}")
+    # Check advancedSettings.dtmfSettings exists for phone agents
+    dtmf = data.get("advancedSettings", {}).get("dtmfSettings", {})
+    if not dtmf.get("enabled"):
+        err("agent.json", "dtmfSettings.enabled should be true for phone agents")
 
 
 def validate_webhooks():
@@ -87,18 +61,49 @@ def validate_webhooks():
         data = load_json(f)
         if not data:
             continue
-        require_fields(rel, data, ["displayName"])
+        if "displayName" not in data:
+            err(rel, "missing displayName")
         gws = data.get("genericWebService")
         if not gws:
-            err(rel, "missing genericWebService object")
+            err(rel, "missing genericWebService")
             continue
         if "uri" not in gws:
             err(rel, "genericWebService.uri missing")
         elif not gws["uri"].startswith("https://"):
             err(rel, f"uri must use https: {gws['uri']}")
-        auth = gws.get("serviceAgentAuth", "")
-        if auth not in VALID_AUTH_ENUMS:
-            err(rel, f"invalid serviceAgentAuth: '{auth}' — expected one of {VALID_AUTH_ENUMS - {''}}")
+        # timeout must be {"seconds": N} object, not a string
+        timeout = data.get("timeout")
+        if timeout is not None:
+            if isinstance(timeout, str):
+                err(rel, f'timeout must be {{"seconds": N}} object, got string "{timeout}"')
+            elif not isinstance(timeout, dict) or "seconds" not in timeout:
+                err(rel, "timeout must have 'seconds' field")
+
+
+def validate_messages(ctx: str, messages: list):
+    """Validate message format matches CX export: {"text": {"text": [...]}}."""
+    for i, msg in enumerate(messages):
+        mctx = f"{ctx}.messages[{i}]"
+        # Should have "text" key with nested "text" array, or "endInteraction"
+        if "text" in msg:
+            inner = msg["text"]
+            if not isinstance(inner, dict) or "text" not in inner:
+                err(mctx, 'text message must be {"text": {"text": ["..."]}}')
+            elif not isinstance(inner["text"], list):
+                err(mctx, "inner text must be an array")
+        if "languageCode" not in msg and "endInteraction" not in msg:
+            err(mctx, "missing languageCode")
+
+
+def validate_fulfillment(ctx: str, ful: dict | None):
+    if not ful:
+        return
+    wh = ful.get("webhook")
+    if wh and not isinstance(wh, str):
+        err(ctx, f"webhook must be string, got {type(wh).__name__}")
+    if wh and not ful.get("tag"):
+        err(ctx, "webhook specified but tag is missing")
+    validate_messages(ctx, ful.get("messages", []))
 
 
 def validate_intents():
@@ -118,14 +123,24 @@ def validate_intents():
         data = load_json(jf)
         if not data:
             continue
-        require_fields(rel, data, ["displayName"])
+        if "displayName" not in data:
+            err(rel, "missing displayName")
+        if "name" not in data:
+            err(rel, "missing 'name' (UUID)")
+        # Training phrases
         tp_dir = intent_dir / "trainingPhrases"
         if tp_dir.is_dir():
             for tp in tp_dir.glob("*.json"):
                 tp_rel = str(tp.relative_to(ROOT))
                 tp_data = load_json(tp)
-                if tp_data and "trainingPhrases" not in tp_data:
-                    err(tp_rel, "missing trainingPhrases key")
+                if not tp_data:
+                    continue
+                phrases = tp_data.get("trainingPhrases", [])
+                for pi, phrase in enumerate(phrases):
+                    if "repeatCount" not in phrase:
+                        err(tp_rel, f"trainingPhrases[{pi}] missing repeatCount")
+                    if "languageCode" not in phrase:
+                        err(tp_rel, f"trainingPhrases[{pi}] missing languageCode")
 
 
 def validate_flows():
@@ -143,8 +158,19 @@ def validate_flows():
             err(str(flow_dir.relative_to(ROOT)), f"missing {fname}.json")
             continue
         fdata = load_json(fj)
-        if fdata and "displayName" not in fdata:
+        if not fdata:
+            continue
+        if "displayName" not in fdata:
             err(frel, "missing displayName")
+        # Validate flow-level transition routes
+        for i, route in enumerate(fdata.get("transitionRoutes", [])):
+            rctx = f"{frel}.transitionRoutes[{i}]"
+            if "intent" not in route:
+                err(rctx, "missing 'intent'")
+            # triggerFulfillment can be empty {}
+            tf = route.get("triggerFulfillment")
+            if tf and tf.get("messages"):
+                validate_messages(rctx, tf["messages"])
 
         pages_dir = flow_dir / "pages"
         if not pages_dir.is_dir():
@@ -154,7 +180,10 @@ def validate_flows():
             pdata = load_json(pf)
             if not pdata:
                 continue
-            require_fields(prel, pdata, ["displayName"])
+            if "displayName" not in pdata:
+                err(prel, "missing displayName")
+            if "form" not in pdata:
+                err(prel, "missing 'form' (should be empty {})")
             validate_fulfillment(f"{prel}.entryFulfillment", pdata.get("entryFulfillment"))
             for i, route in enumerate(pdata.get("transitionRoutes", [])):
                 rctx = f"{prel}.transitionRoutes[{i}]"
