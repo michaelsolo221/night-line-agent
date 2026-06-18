@@ -1,0 +1,11 @@
+{
+  "trainingPhrases": [
+    { "parts": [{ "text": "goodbye" }] },
+    { "parts": [{ "text": "bye" }] },
+    { "parts": [{ "text": "good night" }] },
+    { "parts": [{ "text": "good bye" }] },
+    { "parts": [{ "text": "talk to you later" }] },
+    { "parts": [{ "text": "see you" }] },
+    { "parts": [{ "text": "hang up" }] }
+  ]
+}

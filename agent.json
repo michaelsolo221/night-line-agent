@@ -1,0 +1,12 @@
+{
+  "displayName": "Night Line",
+  "defaultLanguageCode": "en",
+  "timeZone": "America/Chicago",
+  "startFlow": "Default Start Flow",
+  "advancedSettings": {
+    "dtmfSettings": {
+      "enabled": true
+    },
+    "loggingSettings": {}
+  }
+}

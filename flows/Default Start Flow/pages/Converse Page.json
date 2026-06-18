@@ -1,0 +1,71 @@
+{
+  "displayName": "Converse Page",
+  "eventHandlers": [
+    {
+      "event": "sys.no-match-default",
+      "triggerFulfillment": {
+        "webhook": "night-line-orchestrator",
+        "tag": "converse",
+        "returnPartialResponses": true
+      }
+    },
+    {
+      "event": "sys.no-input-1",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "outputAudioText": {
+              "text": "Still with me?"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "sys.no-input-2",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "outputAudioText": {
+              "text": "Still with me?"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "sys.no-input-default",
+      "targetPage": "Goodbye Page"
+    },
+    {
+      "event": "sys.webhook.error",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "outputAudioText": {
+              "text": "Hmm, lost my train of thought. Say that again?"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "event": "sys.webhook.failed",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "outputAudioText": {
+              "text": "Hmm, lost my train of thought. Say that again?"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "transitionRoutes": [
+    {
+      "intent": "goodbye",
+      "targetPage": "Goodbye Page"
+    }
+  ]
+}

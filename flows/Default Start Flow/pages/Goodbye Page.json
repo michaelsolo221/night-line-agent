@@ -1,0 +1,15 @@
+{
+  "displayName": "Goodbye Page",
+  "entryFulfillment": {
+    "messages": [
+      {
+        "outputAudioText": {
+          "text": "Goodnight. Call again soon."
+        }
+      },
+      {
+        "endInteraction": {}
+      }
+    ]
+  }
+}

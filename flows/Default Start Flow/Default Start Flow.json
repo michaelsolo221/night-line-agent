@@ -1,0 +1,8 @@
+{
+  "displayName": "Default Start Flow",
+  "description": "Main flow: DTMF persona selection and conversation loop.",
+  "nluSettings": {
+    "modelType": "MODEL_TYPE_STANDARD",
+    "classificationThreshold": 0.3
+  }
+}

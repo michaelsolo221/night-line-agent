@@ -1,0 +1,8 @@
+{
+  "displayName": "night-line-orchestrator",
+  "timeout": "30s",
+  "genericWebService": {
+    "uri": "https://night-line-921064029774.us-central1.run.app/converse",
+    "serviceAgentAuth": "ID_TOKEN"
+  }
+}
